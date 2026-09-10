@@ -1,0 +1,20 @@
+{
+  "seed": 20260910,
+  "heldout_fraction": 0.2,
+  "min_query_chars": 4,
+  "max_query_chars": 200,
+  "min_response_chars": 15,
+  "max_response_chars": 650,
+  "shingle_n": 3,
+  "self_query_jaccard_threshold": 0.95,
+  "self_pair_jaccard_threshold": 0.9,
+  "v51_query_jaccard_threshold": 0.9,
+  "v51_pair_jaccard_threshold": 0.9,
+  "spot_samples_per_rejection_stratum": 3,
+  "spot_samples_per_acceptance_class": 5,
+  "retention_samples_per_class": 10,
+  "medical_request_requires_explicit_refusal": true,
+  "medical_request_disallows_clarification": true,
+  "documentary_query_context_clarification_allowed": true,
+  "reject_response_promises_and_external_operations": true
+}
