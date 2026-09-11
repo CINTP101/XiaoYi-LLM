@@ -1,0 +1,17 @@
+{
+  "seed": 20260912,
+  "base_train": "/home/cyh/Medical_Qwen/artifacts/v5_3_pipeline/data/train_v5_3.jsonl",
+  "base_train_sha256": "6de15b3680ffcc57bd93804760a4fecfac66bf430c5284c054a5b704ba1e6a59",
+  "development": "/home/cyh/Medical_Qwen/artifacts/v5_3_pipeline/data/protocol_dev_v5_3.jsonl",
+  "heldout": "/home/cyh/Medical_Qwen/artifacts/v5_3_pipeline/data/heldout_v5_3.jsonl",
+  "heldout_sha256": "9bc09b04589a8027035524736eb9291954fb0d861d6f734f781ccbb3a35f489b",
+  "extra_summary_rows": 600,
+  "char_shingle_n": 3,
+  "char_jaccard_threshold": 0.88,
+  "semantic_model": "/home/cyh/Medical_Qwen/models/bge-small-zh-v1.5",
+  "semantic_cosine_threshold": 0.965,
+  "semantic_batch_size": 64,
+  "tokenizer_path": "/home/cyh/Medical_Qwen/models/Qwen2.5-1.5B-Instruct",
+  "runtime_source": "/home/cyh/Medical_Qwen/tcm_chat_v5.py",
+  "audit_samples_per_category": 5
+}

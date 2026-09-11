@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# Train candidate D only after the parent provides GO_D and the accepted file hash.
+set -euo pipefail
+
+project_dir="/home/cyh/Medical_Qwen"
+code_dir="${project_dir}/v5_3_pipeline/training"
+run_dir="${project_dir}/artifacts/v5_3_pipeline/training"
+runtime_python="/home/cyh/miniconda3/envs/tcm_llm/bin/python"
+base_model_dir="${project_dir}/models/Qwen2.5-1.5B-Instruct"
+runtime_source="${project_dir}/tcm_chat_v5.py"
+expected_runtime_sha256="ff6e7337ed1c54217cbb153473aa417af6680e8d185db3e5bb8364f125c087fe"
+precision_source="${project_dir}/artifacts/v5_3_pipeline/data_precision/train_precision_combined_v5_3.jsonl"
+precision_source_sha256="88b4347db192cc2eb27fd9e0030e7a36961875947fbd5e5b47ec4b03df9bcd2b"
+v5_1_dir="${project_dir}/output/tcm-qwen-1.5b-v5-1"
+v5_2_dir="${project_dir}/output/tcm-qwen-1.5b-v5-2"
+candidate_c_dir="${project_dir}/output/tcm-qwen-1.5b-v5-3-candidate-hardened-from-v5-2"
+v5_1_baseline="${project_dir}/artifacts/v5_2_pipeline/v5-1_baseline.sha256"
+v5_2_baseline="${project_dir}/artifacts/v5_3_pipeline/stage0/v5-2_baseline.sha256"
+candidate_c_baseline="${run_dir}/candidates/hardened_from_v5_2/candidate_weights.sha256"
+candidate_dir="${run_dir}/candidates/precision_from_c"
+candidate_output="${project_dir}/output/tcm-qwen-1.5b-v5-3-candidate-precision-from-c"
+input_manifest="${candidate_dir}/precision_training_input_manifest.json"
+plan_path="${candidate_dir}/precision_training_plan.json"
+training_min_free_memory_mib=6000
+
+if [[ "${GO_D:-}" != "YES" ]]; then
+  echo "Refusing candidate D training: parent GO_D=YES is required." >&2
+  exit 2
+fi
+if [[ ! -x "${runtime_python}" || ! -d "${base_model_dir}" || ! -f "${runtime_source}" || ! -x "$(command -v nvidia-smi)" ]]; then
+  echo "Refusing candidate D training: tcm_llm, base model, runtime wrapper, or nvidia-smi is unavailable." >&2
+  exit 2
+fi
+if [[ ! -f "${precision_source}" || -L "${precision_source}" ]]; then
+  echo "Refusing candidate D training: accepted precision train must be one regular file." >&2
+  exit 2
+fi
+source_path="$(realpath -e -- "${precision_source}")"
+if [[ "${source_path}" != "${precision_source}" ]]; then
+  echo "Refusing candidate D training: accepted precision train must resolve to its exact frozen path." >&2
+  exit 2
+fi
+if [[ -e "${candidate_dir}" || -e "${candidate_output}" ]]; then
+  echo "Refusing candidate D training: artifact or output directory already exists." >&2
+  exit 2
+fi
+for required in "${v5_1_dir}" "${v5_2_dir}" "${candidate_c_dir}" "${v5_1_baseline}" "${v5_2_baseline}" "${candidate_c_baseline}"; do
+  if [[ ! -e "${required}" || -L "${required}" ]]; then
+    echo "Refusing candidate D training: required protected input is missing or symlinked: ${required}" >&2
+    exit 2
+  fi
+done
+runtime_hash="$(sha256sum "${runtime_source}" | awk '{print $1}')"
+if [[ "${runtime_hash}" != "${expected_runtime_sha256}" ]]; then
+  echo "Refusing candidate D training: runtime wrapper SHA-256 differs from the frozen prompt contract." >&2
+  exit 2
+fi
+source_hash="$(sha256sum "${source_path}" | awk '{print $1}')"
+if [[ "${source_hash}" != "${precision_source_sha256}" ]]; then
+  echo "Refusing candidate D training: combined train SHA-256 does not match GO_D." >&2
+  exit 2
+fi
+
+mkdir -p "${candidate_dir}"
+(
+  cd "${v5_1_dir}"
+  sha256sum -c "${v5_1_baseline}"
+) | tee "${candidate_dir}/v5-1_pretrain_hash_check.log"
+(
+  cd "${v5_2_dir}"
+  sha256sum -c "${v5_2_baseline}"
+) | tee "${candidate_dir}/v5-2_pretrain_hash_check.log"
+(
+  cd "${candidate_c_dir}"
+  sha256sum -c "${candidate_c_baseline}"
+) | tee "${candidate_dir}/candidate-c_pretrain_hash_check.log"
+
+"${runtime_python}" "${code_dir}/prepare_v5_3_precision_training_input.py" \
+  --source-train-jsonl "${source_path}" \
+  --expected-sha256 "${source_hash}" \
+  --manifest "${input_manifest}" \
+  --plan "${plan_path}" | tee "${candidate_dir}/precision_input_preparation.log"
+printf '%s  %s\n' "${source_hash}" "${source_path}" | tee "${candidate_dir}/accepted_training_input.sha256"
+printf '%s  %s\n' "${runtime_hash}" "${runtime_source}" | tee "${candidate_dir}/runtime_wrapper.sha256"
+"${runtime_python}" "${code_dir}/verify_v5_3_prompt_parity.py" \
+  --jsonl "${source_path}" \
+  --expected-sha256 "${source_hash}" \
+  --base-model-path "${base_model_dir}" \
+  --runtime-source "${runtime_source}" \
+  --expected-runtime-source-sha256 "${expected_runtime_sha256}" \
+  --output "${candidate_dir}/training_runtime_prompt_parity.json"
+
+plan_values="$("${runtime_python}" - "${plan_path}" <<'PY'
+import json
+import sys
+plan = json.load(open(sys.argv[1], encoding="utf-8"))
+required = {
+    "per_device_train_batch_size": 1,
+    "per_device_eval_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "num_train_epochs": 1,
+    "learning_rate": 1e-5,
+    "model_max_length": 768,
+    "seed": 42,
+    "data_seed": 42,
+    "logging_steps": 1,
+}
+for key, value in required.items():
+    if plan.get(key) != value:
+        raise SystemExit(f"precision plan has unexpected {key}: {plan.get(key)!r}")
+if plan.get("training_eval_events_expected", 0) < 4:
+    raise SystemExit("precision plan has fewer than four in-training evaluations")
+print(plan["gradient_accumulation_steps"], plan["num_train_epochs"], plan["learning_rate"], plan["model_max_length"], plan["logging_steps"], plan["eval_steps"], plan["save_steps"])
+PY
+)"
+read -r gradient_accumulation_steps num_train_epochs learning_rate model_max_length logging_steps eval_steps save_steps <<< "${plan_values}"
+
+nvidia-smi --query-gpu=timestamp,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader | tee "${candidate_dir}/gpu_pretrain_snapshot.csv"
+free_memory_mib="$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | awk 'NR==1 {gsub(/^[[:space:]]+|[[:space:]]+$/, ""); print $0}')"
+if ! [[ "${free_memory_mib}" =~ ^[0-9]+$ ]] || (( free_memory_mib < training_min_free_memory_mib )); then
+  echo "Refusing candidate D training: GPU free memory must be at least ${training_min_free_memory_mib} MiB; observed ${free_memory_mib:-unknown} MiB." >&2
+  exit 2
+fi
+"${runtime_python}" - <<'PY' | tee "${candidate_dir}/tcm_llm_runtime.json"
+import importlib.metadata as metadata
+import json
+import sys
+import torch
+result = {"python": sys.version.replace("\n", " "), "executable": sys.executable, "cuda_available": torch.cuda.is_available()}
+for package in ("torch", "transformers", "peft", "datasets", "accelerate", "bitsandbytes", "tensorboard"):
+    try:
+        result[package] = metadata.version(package)
+    except metadata.PackageNotFoundError:
+        result[package] = "NOT_INSTALLED"
+if torch.cuda.is_available():
+    result["gpu"] = torch.cuda.get_device_name(0)
+    result["cuda_runtime"] = torch.version.cuda
+print(json.dumps(result, ensure_ascii=False, indent=2))
+PY
+
+set +e
+CUDA_VISIBLE_DEVICES=0 "${runtime_python}" "${code_dir}/runtime_sft_v5_3.py" \
+  --base-model-path "${base_model_dir}" \
+  --peft-path "${candidate_c_dir}" \
+  --train-jsonl "${source_path}" \
+  --expected-train-sha256 "${source_hash}" \
+  --runtime-source "${runtime_source}" \
+  --expected-runtime-source-sha256 "${expected_runtime_sha256}" \
+  --output-dir "${candidate_output}" \
+  --model-max-length "${model_max_length}" \
+  --per-device-train-batch-size 1 \
+  --per-device-eval-batch-size 1 \
+  --gradient-accumulation-steps "${gradient_accumulation_steps}" \
+  --num-train-epochs "${num_train_epochs}" \
+  --learning-rate "${learning_rate}" \
+  --logging-steps "${logging_steps}" \
+  --eval-steps "${eval_steps}" \
+  --save-steps "${save_steps}" \
+  --seed 42 --data-seed 42 --report-to tensorboard 2>&1 | tee "${candidate_dir}/train.log"
+training_exit_code="${PIPESTATUS[0]}"
+set -e
+if (( training_exit_code != 0 )); then
+  echo "Candidate D training failed with exit code ${training_exit_code}; no interrupted-run continuation was issued." >&2
+  exit "${training_exit_code}"
+fi
+
+"${runtime_python}" "${code_dir}/verify_v5_3_precision_training_evidence.py" \
+  --training-output "${candidate_output}" \
+  --plan "${plan_path}" \
+  --output "${candidate_dir}/training_evidence.json"
+(
+  cd "${candidate_output}"
+  find . -type f -print0 | sort -z | xargs -0 sha256sum
+) > "${candidate_dir}/candidate-d_weights.sha256"
+(
+  cd "${candidate_output}"
+  sha256sum -c "${candidate_dir}/candidate-d_weights.sha256"
+) | tee "${candidate_dir}/candidate-d_weights_hash_check.log"
+(
+  cd "${v5_1_dir}"
+  sha256sum -c "${v5_1_baseline}"
+) | tee "${candidate_dir}/v5-1_posttrain_hash_check.log"
+(
+  cd "${v5_2_dir}"
+  sha256sum -c "${v5_2_baseline}"
+) | tee "${candidate_dir}/v5-2_posttrain_hash_check.log"
+(
+  cd "${candidate_c_dir}"
+  sha256sum -c "${candidate_c_baseline}"
+) | tee "${candidate_dir}/candidate-c_posttrain_hash_check.log"
+nvidia-smi --query-gpu=timestamp,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader | tee "${candidate_dir}/gpu_posttrain_snapshot.csv"
+echo "Candidate D training completed. Development evaluation is a separately gated step; no test input was read here."

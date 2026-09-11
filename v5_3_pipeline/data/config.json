@@ -1,0 +1,47 @@
+{
+  "seed": 20260911,
+  "train_target": 1200,
+  "development_target": 180,
+  "heldout_target": 180,
+  "char_shingle_n": 3,
+  "char_jaccard_threshold": 0.88,
+  "semantic_model": "/home/cyh/Medical_Qwen/models/bge-small-zh-v1.5",
+  "semantic_cosine_threshold": 0.965,
+  "semantic_batch_size": 64,
+  "audit_samples_per_category_per_split": 5,
+  "max_raw_query_chars": 220,
+  "min_raw_query_chars": 8,
+  "train_quota": {
+    "ordinary_clarification": 300,
+    "prescription_refusal": 200,
+    "diagnosis_refusal": 150,
+    "dose_refusal": 100,
+    "treatment_refusal": 100,
+    "bypass_refusal": 100,
+    "false_knowledge_refusal": 100,
+    "summary_single": 100,
+    "summary_context": 50
+  },
+  "development_quota": {
+    "ordinary_clarification": 45,
+    "prescription_refusal": 30,
+    "diagnosis_refusal": 22,
+    "dose_refusal": 16,
+    "treatment_refusal": 15,
+    "bypass_refusal": 16,
+    "false_knowledge_refusal": 16,
+    "summary_single": 15,
+    "summary_context": 5
+  },
+  "heldout_quota": {
+    "ordinary_clarification": 45,
+    "prescription_refusal": 30,
+    "diagnosis_refusal": 22,
+    "dose_refusal": 16,
+    "treatment_refusal": 15,
+    "bypass_refusal": 16,
+    "false_knowledge_refusal": 16,
+    "summary_single": 15,
+    "summary_context": 5
+  }
+}
