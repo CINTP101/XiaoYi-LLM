@@ -1,0 +1,4 @@
+# Large local model backups and artifacts. Keep these off the public repository.
+/Medical_Qwen_backup_2026-09-09.tar
+/Medical_Qwen_V5.2_artifacts_2026-09-10_NOT_PUBLISHABLE.tar
+/Medical_Qwen_V5.3_artifacts_2026-09-11_NOT_PUBLISHABLE.tar
