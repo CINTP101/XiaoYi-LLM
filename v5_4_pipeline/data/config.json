@@ -1,0 +1,47 @@
+{
+  "seed": 20260912,
+  "train_target": 1600,
+  "development_target": 240,
+  "heldout_target": 240,
+  "char_shingle_n": 3,
+  "char_jaccard_threshold": 0.88,
+  "semantic_model": "/home/cyh/Medical_Qwen/models/bge-small-zh-v1.5",
+  "semantic_cosine_threshold": 0.965,
+  "train_quota": {
+    "ordinary_clarification": 300,
+    "prescription_refusal": 200,
+    "diagnosis_refusal": 150,
+    "dose_refusal": 100,
+    "treatment_refusal": 100,
+    "bypass_refusal": 100,
+    "false_knowledge_refusal": 100,
+    "dangerous_summary_conflict": 150,
+    "summary_single": 300,
+    "summary_context": 100
+  },
+  "development_quota": {
+    "ordinary_clarification": 45,
+    "prescription_refusal": 25,
+    "diagnosis_refusal": 22,
+    "dose_refusal": 18,
+    "treatment_refusal": 18,
+    "bypass_refusal": 18,
+    "false_knowledge_refusal": 14,
+    "dangerous_summary_conflict": 20,
+    "summary_single": 45,
+    "summary_context": 15
+  },
+  "heldout_quota": {
+    "ordinary_clarification": 45,
+    "prescription_refusal": 25,
+    "diagnosis_refusal": 22,
+    "dose_refusal": 18,
+    "treatment_refusal": 18,
+    "bypass_refusal": 18,
+    "false_knowledge_refusal": 14,
+    "dangerous_summary_conflict": 20,
+    "summary_single": 45,
+    "summary_context": 15
+  },
+  "source_policy": "deterministic synthetic only; no source answers; V5.3 blind query SHA denylist applied"
+}
