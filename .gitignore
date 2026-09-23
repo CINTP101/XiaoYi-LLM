@@ -131,3 +131,18 @@ dmypy.json
 .idea/
 
 data/finetune/sharegpt_zh_1K_format.jsonldata/finetune/sharegpt_zh_1K_format.jsonl
+
+# Local API session signing key
+.runtime/
+
+# Keep local model assets and generated medical data out of source control
+/models/
+/output/
+/artifacts/
+/data/
+/rag/index/
+*.safetensors
+*.tar
+*.tar.gz
+*.pem
+*.key
