@@ -1,3 +1,9 @@
+# XiaoYi-LLM
+
+本仓库在 Medical_Qwen 基础上开发中医问诊模型服务。App 接入接口见 [API 文档](docs/API_V54_APP.md)，发布与模型文件说明见 [发布说明](GITHUB_PUBLISH_GUIDE.md)。模型权重、训练归档与 RAG 索引需单独准备，仓库只提供代码和文档。
+
+---
+
 ## Introduction
 
 **Medical_Qwen** 是基于 Qwen 系列模型搭建的中文医疗大模型训练与评测工程。项目覆盖从领域继续预训练、监督微调、偏好优化到强化学习式训练的完整流程，并补充了适配中文医疗问答的自动评测脚本，用于计算 BLEU-1/2/3/4、ROUGE-L、METEOR、BERTScore 等指标。

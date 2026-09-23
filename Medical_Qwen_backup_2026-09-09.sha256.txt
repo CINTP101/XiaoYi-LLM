@@ -1,0 +1,6 @@
+Archive: C:\Users\cyh\Desktop\Medical_Qwen_backup_2026-09-09.tar
+SizeBytes: 5017067520
+SHA256: F88D537122D0BB07965186667F9B403ADFD8A667B42EA217D86AF19336583556
+Created: 2026-09-09T23:58:30.9696377+08:00
+Includes: source, .git, data, models, output checkpoints, rag, stable snapshots
+

@@ -146,3 +146,8 @@ data/finetune/sharegpt_zh_1K_format.jsonldata/finetune/sharegpt_zh_1K_format.jso
 *.tar.gz
 *.pem
 *.key
+
+# Existing XiaoYi-LLM archive exclusions
+/Medical_Qwen_backup_2026-09-09.tar
+/Medical_Qwen_V5.2_artifacts_2026-09-10_NOT_PUBLISHABLE.tar
+/Medical_Qwen_V5.3_artifacts_2026-09-11_NOT_PUBLISHABLE.tar
