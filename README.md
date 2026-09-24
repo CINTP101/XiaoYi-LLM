@@ -1,4 +1,4 @@
-# XiaoYi-LLM
+# 小医大语言模型
 
 本仓库在 Medical_Qwen 基础上开发中医问诊模型服务。App 接入接口见 [API 文档](docs/API_V54_APP.md)，发布与模型文件说明见 [发布说明](GITHUB_PUBLISH_GUIDE.md)。模型权重、训练归档与 RAG 索引需单独准备，仓库只提供代码和文档。
 
