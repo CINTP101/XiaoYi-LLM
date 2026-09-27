@@ -1,9 +1,15 @@
-# Contributing
+# 一起改进小医
 
-We are happy to accept your contributions to make this repo better and more awesome! To avoid unnecessary work on either
-side, please stick to the following process:
+发现问题或有新想法？欢迎先开一个 issue，说清楚你遇到了什么、希望小医怎么表现。有对应 issue 后再提 pull request，大家比较容易对齐方向，也能少做重复工作。
 
-1. Check if there is already an issue for your concern.
-2. If there is not, open a new one to start a discussion. We hate to close finished PRs!
-3. If we decide your concern needs code changes, we would be happy to accept a pull request. Please consider the
-commit guidelines below.
+提交前可以简单检查一下：
+
+1. 这次改动只涉及必要的代码和文档。
+2. 改了 API 请求或响应时，同步更新 [接入说明](docs/API_V54_APP.md) 和相关测试。
+3. 涉及医学知识时，附上能核查的资料来源；不要把未经筛选的内容直接加入训练数据。
+4. 不提交患者隐私、访问密钥、模型权重、RAG 索引或大型归档。
+5. 在 PR 里写清楚改了什么、为什么改，以及运行过哪些检查。
+
+本地 API 回归可以运行 `python tests/test_api_v54.py`。如果改动需要真实模型，再说明使用的权重版本和实际验证结果。
+
+小医仍在开发中，欢迎把问题讲具体；一个能复现的例子通常最有帮助。

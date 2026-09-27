@@ -1,4 +1,6 @@
-# Training Detail
+# 训练流程怎么理解（上游通用参考）
+
+想了解 PT、SFT 和偏好优化大致各做什么，可以从这里看起。这是继承的通用训练说明，里面的 LLaMA 等模型只是示例；小医实际版本和结果请以本仓库的阶段报告为准。
 
 
 ### Stage 1: PT(Continue PreTraining)

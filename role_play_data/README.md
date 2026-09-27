@@ -1,4 +1,8 @@
 
+# 角色扮演数据怎么构造（参考）
+
+这份上游示例介绍一种合成角色对话数据的流程，不表示这些数据已用于小医当前版本。若要拿它训练，请先检查内容质量、使用权限和隐私风险。
+
 ## 造训练数据
 
 ### 数据生成框架
@@ -32,4 +36,3 @@ python roleplay_data_generate_gpt4.py
 
 python roleplay_data_generate_doubao.py
 ```
-

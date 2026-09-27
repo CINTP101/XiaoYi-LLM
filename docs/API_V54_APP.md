@@ -1,9 +1,9 @@
-# V5.4 R1 App API 接入说明
+# 把小医接进 App（V5.4-R1）
 
-接口地址：`POST /v1/tcm/process`。请求/响应兼容 XiaoMedInsight 当前的 `TcmGatewayClient`。
-API 版本 V6.21.0；模型版本 V5.4-R1；运行时同时加载冻结的 LoRA 权重和 Candidate H v2。
+App 和小医对话，用的是 `POST /v1/tcm/process`。请求与响应兼容 XiaoMedInsight 当前的 `TcmGatewayClient`，接入时不用另造一套消息格式。
+“小医”是对外名称；接口版本仍是 V6.21.0，模型版本仍是 V5.4-R1。运行时会加载冻结的 LoRA 权重和 Candidate H v2，这些技术名称继续保留在接口与发布记录里。
 
-## 1. 启动与检查
+## 1. 先在本机跑起来
 
 在 WSL 中逐行运行：
 
@@ -13,17 +13,16 @@ conda activate tcm_llm
 python tcm_api.py --host 127.0.0.1 --port 8008
 ```
 
-`Ctrl+C` 是键盘组合键，不是一条命令。后台服务已经占用端口时，不要重复启动。
+想停服务时，同时按键盘上的 Ctrl 和 C；不要把 `Ctrl+C` 当成命令输入。端口已被服务占用时，也不用再启动一份。
 
 - 接口文档：<http://127.0.0.1:8008/docs>
-- 进程健康：`GET /healthz`
-- 模型就绪：`GET /readyz`，应返回 `status=ready`、`model_version=V5.4-R1` 和 `stack_verification.status=PASS`。
+- 进程是否还在：`GET /healthz`
+- 小医是否真的加载完成：`GET /readyz`，应返回 `status=ready`、`model_version=V5.4-R1` 和 `stack_verification.status=PASS`。
 - 启动时重新校验 51 个权重文件、基础权重、提示词源文件和适配器；校验或加载失败会中止启动。
 
-本次本机服务监听 127.0.0.1，未启用 Bearer 鉴权；地址仅供这台电脑和可访问宿主机的模拟器调试。
-单进程单 GPU；不要增加 uvicorn workers，否则每个进程会重复加载权重。
+这里让服务只监听 127.0.0.1，且不启用 Bearer 鉴权，适合本机和可访问宿主机的模拟器调试。小医按单进程、单 GPU 运行；不要增加 uvicorn workers，否则每个进程都会再加载一份权重。
 
-## 2. App 请求格式
+## 2. 一轮消息怎么发
 
 发送 JSON 对象：
 
@@ -42,7 +41,7 @@ curl http://127.0.0.1:8008/v1/tcm/process \
   -d '{"text":"我这阵子觉得嘴巴发干。","state":null,"new_session":true,"request_id":"app-001"}'
 ```
 
-Swagger 中点击 Try it out 后，**全选并替换**请求框内容；只保留一个 `{...}`，不能把两个 JSON 对象接在一起。
+在 Swagger 里点 Try it out 后，先**全选并替换**请求框里的默认内容。请求体只能有一个 `{...}`；把两个 JSON 接在一起会返回 422。
 
 响应字段：
 
@@ -57,15 +56,15 @@ Swagger 中点击 Try it out 后，**全选并替换**请求框内容；只保�
 | `result.meta.model_used` | 本轮是否调用模型；急症、转诊和知识检索路径可绕过模型 |
 | `result.meta.protocol` | 问诊路径的结构化追问/摘要结果 |
 
-第二轮：将上一轮完整的 `result.state` 放进 `state`，`new_session=false`，`text` 填新的回答。
-用户点击“新建问诊”时设置 `new_session=true`。每个用户、每个会话独立保存状态。
+第二轮，把上一轮完整的 `result.state` 放进 `state`，设 `new_session=false`，再把用户的新回答填进 `text`。
+用户点“新建问诊”时，设 `new_session=true`。每个用户、每次问诊都要单独保存状态。
 旧 V6.17 状态首次接入会重置并返回 `meta.session_event=legacy_state_reset`。
 
 状态在客户端保存，服务端用 `.runtime/state.key` 签名；该文件不进入 Git 或交付包。
 保留该密钥，服务重启后状态仍有效。多实例部署必须共享通过环境变量设置的 `TCM_API_STATE_SECRET`（至少 32 字节），并由 App 后端负责用户身份校验和会话归属。
 状态包含用户陈述，不应记录到通用日志或跨用户共享。
 
-## 3. XiaoMedInsight 配置
+## 3. XiaoMedInsight 该填什么地址
 
 当前 Debug 配置默认为：
 
@@ -75,7 +74,7 @@ http://10.0.2.2:8008/v1/tcm/process
 
 该地址用于 Android 模拟器访问宿主电脑。现有客户端已会显示 message 并保存 state，无需因 V5.4 更改这两个字段的处理。
 
-真机的 `127.0.0.1` 指向手机本身。真机需填写手机可访问的电脑地址或云服务地址，在 App 的 `local.properties` 设置后重新构建：
+真机上的 `127.0.0.1` 指向手机自己。要在真机上用小医，请填写手机能访问的电脑地址或云服务地址，然后在 App 的 `local.properties` 设置并重新构建：
 
 ```properties
 TCM_API_URL=https://你的域名/v1/tcm/process
@@ -83,7 +82,7 @@ TCM_API_URL=https://你的域名/v1/tcm/process
 
 Release 版本只接受 HTTPS。WSL NAT 下局域网真机访问可能还需 Windows 端口转发和防火墙配置；本轮未修改 Windows 网络配置，也没有完成真机安装联调。
 
-## 4. 云端及鉴权
+## 4. 放到云端时怎么保护接口
 
 云端需要本项目代码、基础模型、R1 权重、冻结清单和适配器；若保留知识检索，还需要既有 BGE 模型与 RAG 索引。完整项目备份和 R1 归档包含这些历史产物，本次 API 代码包不重复包含大权重。
 
@@ -93,7 +92,7 @@ export TCM_API_STATE_SECRET='替换为至少32字节的随机会话签名密钥'
 python tcm_api.py --host 0.0.0.0 --port 8008
 ```
 
-对外通过 HTTPS 反向代理。生产架构使用“App → 已有业务后端（用户登录鉴权）→ 模型 API”；业务后端持有密钥，并在访问模型 API 时携带：
+对外访问请走 HTTPS 反向代理。正式接入时，让请求按“App → 业务后端（校验用户身份）→ 小医 API”流转；密钥由业务后端保管，并在请求小医 API 时携带：
 
 ```http
 Authorization: Bearer <TCM_API_KEY>
@@ -107,7 +106,7 @@ Swagger 右上角 Authorize 可以填入密钥进行接口调试。
 网页客户端按需设置 `TCM_API_CORS_ORIGINS=https://你的网页域名`，原生 Android 网络调用不需要 CORS。
 公网域名、云主机和 HTTPS 尚未部署，本机运行不等于手机随时联网可用。
 
-## 5. 上限与错误
+## 5. 遇到报错先看这里
 
 | 状态码 | 含义 / 客户端处理 |
 |---|---|
@@ -124,9 +123,9 @@ text 最多 4096 字符，HTTP body 最多 320 KiB，state 最多 256 KiB。
 最多 8 个在途请求，单次会话最多 24 个问诊轮次，实际可能先触及 token 上限。
 客户端建议 connect timeout 15 秒、read timeout 60 秒、总超时 75 秒；已有 XiaoMedInsight 配置满足。
 
-## 6. 能力范围和验证
+## 6. 小医目前能做什么
 
-这是结构化症状采集和用户陈述摘要 API，不输出个体诊断、辨证、处方或剂量。
+这套接口负责结构化采集症状和整理用户陈述，不输出个体诊断、辨证、处方或剂量。
 H v2 按用户文本决定最终结果，不采用原始模型输出决定字段；HTTP 不返回原始生成。
 问诊 API 新增的会话组合逻辑使用合成用例回归；未重新读取或使用已封存的盲测集。
 纯知识问法沿用现有 intent_router 和 RAG，例如“什么是阴阳学说？”；不明确的问法可能被归入问诊。

@@ -1,10 +1,25 @@
-#### 问：报错"NotImplementedError: Cannot copy out of meta tensor; no data!"
-答：单卡显存不足，device_map='auto'在gpu占满下，会自动利用cpu加载模型，导致`_move_model_to_device`错误。
-解决方法：指定多卡训练，参考`CUDA_VISIBLE_DEVICES=0,1,2,3 python supervised_finetuning.py ...`，把batch size调大，显存打满，跟数据并行一样能最大化利用显卡加速训练。参考[issues 4](https://github.com/shibing624/MedicalGPT/issues/4)
+# 小医常见问题
 
+## 从 GitHub 下载代码，就能直接运行小医吗？
 
-#### 问：chatglm，baichuan模型用LoRA（peft）训练，合并时报错
-答：chatglm，baichuan模型的代码跟权重文件放一起了，代码没有合入transformers官方库，merge lora时，需要把原始权重路径下的python文件全部拷贝到merged文件夹下使用，参考[issue 68](https://github.com/shibing624/MedicalGPT/issues/68)
+还不能。仓库里没有基础模型、V5.4-R1 权重、BGE 模型和 RAG 索引。准备好这些文件和运行环境后，再按 [API 接入说明](API_V54_APP.md) 启动服务。
 
-#### 问：chatglm，baichuan无法做RM和RL训练？
-答：chatglm不是标准CausalLM，RM阶段需要AutoModelForSequenceClassification，chatglm没有实现；PPO训练需要AutoModelForCausalLMWithValueHead，chatglm也不支持，同样的原因百川模型也无法做RM和RL训练。官方transformers兼容chatglm和baichuan模型后才支持。参考[issue 107](https://github.com/shibing624/MedicalGPT/issues/107)
+## `/healthz` 是 200，为什么模型还是不能用？
+
+`/healthz` 只说明服务进程还在运行。请再看 `/readyz`；它会检查模型是否真正加载并通过发布清单校验。
+
+## Swagger 返回 422，提示 `Extra data` 怎么办？
+
+通常是请求框里接上了两个 JSON 对象。点击 **Try it out** 后，把默认示例全部替换成**一个**完整的 `{...}`，再点 Execute。可以直接照着 [API 接入说明](API_V54_APP.md)里的请求示例填写。
+
+## 手机 App 为什么连不上 `127.0.0.1:8008`？
+
+手机里的 `127.0.0.1` 指的是手机自己。Android 模拟器可使用 `10.0.2.2` 访问宿主机；真机需要电脑的可访问地址或已经部署的 HTTPS 服务。还要检查防火墙、端口和 App 配置。
+
+## 小医能诊断或开方吗？
+
+不能。当前 API 用于症状信息采集、追问、事实摘要和必要的分流提示，不提供个体诊断、辨证、处方或剂量。紧急情况应及时寻求线下医疗帮助。
+
+## `Ctrl+C` 要输入到终端里吗？
+
+不用。它表示同时按下键盘上的 Ctrl 和 C，用来停止正在运行的服务。

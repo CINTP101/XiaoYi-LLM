@@ -1,21 +1,27 @@
-# XiaoYi-LLM 发布说明
+# 小医仓库：代码怎么更新，模型文件放哪里
 
-目标仓库：<https://github.com/CINTP101/XiaoYi-LLM>。本地 `origin` 仍指向上游 `scuterGuoyulong/Medical_Qwen`；`personal` 指向自己的仓库。
+小医的代码在 <https://github.com/CINTP101/XiaoYi-LLM>。这里放的是源码、使用说明和部分历史报告；模型权重、训练归档、BGE 模型、RAG 索引和服务密钥没有放进普通 Git 仓库。所以，在 GitHub 上看到代码，不代表已经拿到了可直接运行的完整模型。
 
-本次从本地 `Medical_Qwen` 创建 `codex/github-publish`，提交 App API 代码、文档和必要的 RAG 源码。随后在隔离工作树 `codex/github-publish-merged` 合并目标仓库原有的 README、V5.2/V5.3 报告和 SHA-256 文件。两个仓库原本没有共同 Git 历史，合并保留了目标仓库的报告和校验文件，并采用本地较完整的 README。V5.3 报告采用与已有 SHA-256 文件一致的版本。
+## 改完文件后怎么上传
 
-发布分支推送到目标仓库的 `main`：
+先进入你正在修改的那份本地仓库，运行 `git remote -v`。确认要推送的远端确实是 `CINTP101/XiaoYi-LLM`，再操作。不同电脑或工作树可能把它叫作 `origin` 或 `personal`，不要只凭远端名字判断。
+
+这份 WSL 发布工作树使用 `personal`。例如只修改了 README，可以这样做：
 
 ```bash
-git push -u personal codex/github-publish-merged:main
+cd ~/Medical_Qwen_publish
+git status
+git add README.md
+git commit -m "Update XiaoYi README"
+git push personal HEAD:main
 ```
 
-如果在 WSL 中提示缺少 GitHub 凭据，可以使用已登录的 Git for Windows / Git Credential Manager 推送。此机器的 Windows 系统代理是 `127.0.0.1:7892`；代理端口变化时应按实际设置调整。不要将访问令牌写进命令、仓库或文档。
+改的是其他文件，就把 `README.md` 换成实际路径。推送前看一眼 `git status`，尽量逐个添加要提交的文件。保存文件并不会自动同步到 GitHub。
 
-## 仓库包含与不包含的内容
+## 哪些文件要单独保存
 
-本次 API 提交只加入了 17 个明确审查过的代码、文档和配置文件，没有加入本机模型权重、训练归档、RAG 索引、会话密钥或新生成的数据。原上游仓库已跟踪的少量 `data/` 示例文件仍随原有 Git 历史保留；`.gitignore` 不能移除既有历史。原仓库中未提交的脚本和工作区修改也仍保留在本地，没有并入这次发布。
+`.gitignore` 会挡住常见的模型目录、生成数据、密钥和 `*.tar` 归档。但忽略规则**不会删除已经进入 Git 历史的文件**：上游原本跟踪的一些小型示例数据，仍会跟随代码历史保留。
 
-本机 `models/` 约 3.1 GB、`output/` 约 4.6 GB。完整运行还需要另行准备基础模型、LoRA 权重、BGE 模型与 RAG 索引；代码仓库本身不等于完整可运行的模型备份。大文件仍应依照现有归档与 SHA-256 流程保存。若要通过 GitHub 分发权重或神农数据，需先确认再分发权限，并单独规划 Git LFS 存储和费用。
+完整运行小医，需要另行准备 Qwen 基础模型、V5.4-R1 LoRA 权重、冻结清单与适配器；启用知识检索还需要 BGE 模型和 RAG 索引。请继续用既有的“归档 + SHA-256”方式保存大文件。若打算公开分发权重或神农数据，先核对再分发权限和存储成本，别直接运行 `git add .`。
 
-App 接入说明见 [docs/API_V54_APP.md](docs/API_V54_APP.md)。
+App 接入方式见 [小医 API 说明](docs/API_V54_APP.md)。V5.2/V5.3 的报告和校验文件属于历史发布记录，保留原文，便于日后核对。
