@@ -15,7 +15,7 @@ The FastAPI service checks the frozen weights and adapters at startup, and `/rea
 ## Start here
 
 - [App API guide](docs/API_V54_APP.md) — requests, session state, authentication, and deployment notes.
-- [Publishing and file guide](GITHUB_PUBLISH_GUIDE.md) — what is in Git and what must be restored separately.
+- [Publishing and file guide](docs/GITHUB_PUBLISH_GUIDE.md) — what is in Git and what must be restored separately.
 - [Python client example](examples/app_api_client.py) — a small request example.
 - `v5_2_pipeline/`, `v5_3_pipeline/`, and `v5_4_pipeline/` — historical data and training work.
 

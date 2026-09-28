@@ -1,5 +1,5 @@
 # 指定GPU运行
-CUDA_VISIBLE_DEVICES=0 python test_sft.py \
+CUDA_VISIBLE_DEVICES=0 python -m legacy.test_sft \
     --base_model_path /home/gyl/project/Medical_Image_Analysis/R2GenCSR/Qwen/Qwen1.5-1.8B-Chat \
     --test_data_path data/finetune/sharegpt_zh_1K_format.jsonl \
     --load_in_4bit \

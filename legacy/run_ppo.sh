@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0,1 python ppo_training.py \
+CUDA_VISIBLE_DEVICES=0,1 python -m legacy.ppo_training \
     --sft_model_path Qwen/Qwen2.5-0.5B-Instruct \
     --reward_model_path Qwen/Qwen2.5-0.5B-Instruct \
     --template_name qwen \

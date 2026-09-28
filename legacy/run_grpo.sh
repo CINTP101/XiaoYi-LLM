@@ -2,7 +2,7 @@
 
 # 优化的GRPO QLoRA训练脚本 - 解决显存不足问题
 # 针对32k长文本的配置
-CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 grpo_training.py \
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 legacy/grpo_training.py \
     --model_name_or_path /home/gyl/project/Medical_Image_Analysis/R2GenCSR/Qwen/Qwen1.5-1.8B-Chat \
     --train_file_dir data/grop \
     --train_samples -1 \

@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 pretraining.py \
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 legacy/pretraining.py \
     --model_name_or_path /home/gyl/project/Medical_Image_Analysis/R2GenCSR/Qwen/Qwen1.5-1.8B-Chat \
     --train_file_dir /home/gyl/DataSets/medical/pretrain/ \
     --validation_file_dir /home/gyl/DataSets/medical/pretrain/ \

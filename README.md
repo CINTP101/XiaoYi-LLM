@@ -4,7 +4,7 @@
 
 小医是面向**中医问诊信息采集**的实验性大语言模型项目。它基于 Qwen2.5-1.5B-Instruct 进行 LoRA 微调，结合安全分流、会话状态管理和可选的 BGE/RAG 检索，帮助 App 追问症状、整理用户陈述。小医不提供个体诊断、辨证结论或处方。
 
-本仓库公开代码、接口说明和部分训练记录。**Qwen 基础模型、V5.4-R1 权重、BGE 模型及现有 RAG 索引尚未在公开仓库提供**；仅克隆代码不能让完整服务就绪。文件准备方式见 [仓库与发布说明](GITHUB_PUBLISH_GUIDE.md)。
+本仓库公开代码、接口说明和部分训练记录。**Qwen 基础模型、V5.4-R1 权重、BGE 模型及现有 RAG 索引尚未在公开仓库提供**；仅克隆代码不能让完整服务就绪。文件准备方式见 [仓库与发布说明](docs/GITHUB_PUBLISH_GUIDE.md)。
 
 ## 概述
 
@@ -44,7 +44,7 @@ curl http://127.0.0.1:8008/v1/tcm/process \
 
 ## 模型与数据
 
-小医的技术版本名保留为 V5.4-R1，以便和训练日志、冻结清单及历史报告对应。基础模型来自 Qwen；LoRA 权重与 Candidate H v2 适配器需配套使用。训练与清洗流程保留在 `v5_2_pipeline/`、`v5_3_pipeline/` 和 `v5_4_pipeline/`；阶段统计可查阅 [V5.2 报告](V5_2_FINAL_REPORT.md)与 [V5.3 报告](V5_3_FINAL_REPORT.md)。
+小医的技术版本名保留为 V5.4-R1，以便和训练日志、冻结清单及历史报告对应。基础模型来自 Qwen；LoRA 权重与 Candidate H v2 适配器需配套使用。训练与清洗流程保留在 `v5_2_pipeline/`、`v5_3_pipeline/` 和 `v5_4_pipeline/`；阶段统计可查阅 [V5.2 报告](reports/V5_2_FINAL_REPORT.md)与 [V5.3 报告](reports/V5_3_FINAL_REPORT.md)。
 
 完整神农原始数据和训练归档不随本仓库发布。现有 RAG 元数据含国家标准、药典及教材来源的正文片段，公开再分发权限尚未核清，因此索引也未上传。代码开放不等于训练数据、模型权重或知识文本自动获得相同许可。
 
@@ -81,6 +81,8 @@ curl http://127.0.0.1:8008/readyz
 | `docs/API_V54_APP.md` | App 请求格式、错误码和部署边界 |
 | `examples/app_api_client.py` | Python 客户端示例 |
 | `v5_2_pipeline/`、`v5_3_pipeline/`、`v5_4_pipeline/` | 数据、训练与评估流程 |
+| `legacy/` | 上游通用训练、演示脚本及配置；不参与当前 API 启动 |
+| `reports/` | 历史阶段报告与校验记录 |
 
 ## 致谢
 

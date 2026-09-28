@@ -5,21 +5,21 @@
 ## 训练脚本
 
 
-- 第一阶段：PT(Continue PreTraining)增量预训练 `run_pt.sh`
-- 第二阶段：SFT(Supervised Fine-tuning)有监督微调 `run_sft.sh`
+- 第一阶段：PT(Continue PreTraining)增量预训练 `legacy/run_pt.sh`
+- 第二阶段：SFT(Supervised Fine-tuning)有监督微调 `legacy/run_sft.sh`
 - 第三阶段
   - RLHF(Reinforcement Learning from Human Feedback)分为两步：
-    - RM(Reward Model)奖励模型建模 `run_rm.sh`
-    - RL(Reinforcement Learning)基于人类反馈的强化学习 `run_ppo.sh`
-  - DPO(Direct Preference Optimization)直接偏好优化 `run_dpo.sh`
+    - RM(Reward Model)奖励模型建模 `legacy/run_rm.sh`
+    - RL(Reinforcement Learning)基于人类反馈的强化学习 `legacy/run_ppo.sh`
+  - DPO(Direct Preference Optimization)直接偏好优化 `legacy/run_dpo.sh`
 
 
 ## 训练参数说明
 
 1. 如果想要单卡训练，仅需将nproc_per_node设置为1即可，或者去掉torchrun命令，直接运行python脚本，如`python supervised_finetuning.py`
 2. 指定训练的base模型（默认llama），训练代码也兼容ChatGLM/BLOOM/BaiChuan等GPT模型，以baichuan模型为例，调整`--model_name_or_path baichuan-inc/Baichuan-13B-Chat`，特别的，如果未训练只推理，base model是类似`baichuan-inc/Baichuan-13B-Chat`已经对齐的模型，则需要指定`--template_name baichuan`；如果在base model基础上训练，默认采用`vicuna`模板，后续用训练好的模型推理时，也指定相同的`--template_name vicuna`即可
-3. 指定训练集，`--train_file_dir`指定训练数据目录，`--validation_file_dir`指定验证数据目录，如果不指定，默认使用`--dataset_name`指定的HF datasets数据集，训练集字段格式见[数据集格式](https://github.com/shibing624/MedicalGPT/wiki/%E6%95%B0%E6%8D%AE%E9%9B%86)，建议领域训练集中加入一些通用对话数据，数据集链接见[📚 Dataset](https://github.com/shibing624/MedicalGPT#-dataset)，当前默认多轮对话格式，兼容单轮对话，微调训练集如果是alpaca格式，可以用[convert_dataset.py](https://github.com/shibing624/MedicalGPT/blob/main/convert_dataset.py)转为shareGPT格式，即可传入训练
-4. 如果运行环境支持deepspeed，加上`--deepspeed zero2.json`参数启动zero2模式；显存不足，加上`--deepspeed zero3.json --fp16`参数启动zero3混合精度模式
+3. 指定训练集，`--train_file_dir`指定训练数据目录，`--validation_file_dir`指定验证数据目录，如果不指定，默认使用`--dataset_name`指定的HF datasets数据集，训练集字段格式见[数据集格式](https://github.com/shibing624/MedicalGPT/wiki/%E6%95%B0%E6%8D%AE%E9%9B%86)，建议领域训练集中加入一些通用对话数据，数据集链接见[📚 Dataset](https://github.com/shibing624/MedicalGPT#-dataset)，当前默认多轮对话格式，兼容单轮对话，微调训练集如果是alpaca格式，可以用[convert_dataset.py](../legacy/convert_dataset.py)转为shareGPT格式，即可传入训练
+4. 如果运行环境支持deepspeed，加上`--deepspeed legacy/configs/zero2.json`参数启动zero2模式；显存不足，加上`--deepspeed legacy/configs/zero3.json --fp16`参数启动zero3混合精度模式
 5. 如果gpu支持int8/int4量化，加上`--load_in_4bit True`代表采用4bit量化训练，或者`--load_in_8bit True`代表采用8bit量化训练，均可显著减少显存占用
 6. 训练集条数控制，`--max_train_samples`和`--max_eval_samples`指定训练和验证数据集的最大样本数，用于快速验证代码是否可用，训练时建议设置为`--max_train_samples -1`表示用全部训练集，`--max_eval_samples 50`表示用50条验证数据
 7. 训练方式，指定`--use_peft False`为全参训练（要移除`--fp16`），`--use_peft True`是LoRA训练；注意：全参训练LLaMA-7B模型需要120GB显存，LoRA训练需要13GB显存
@@ -40,7 +40,7 @@
 LoRA layers were using at all stages to reduce memory requirements.
 At each stage the peft adapter layers were merged with the base model, using:
 ```shell
-python merge_peft_adapter.py \
+python -m legacy.merge_peft_adapter \
   --base_model base_model_dir \
   --tokenizer_path base_model_dir \
   --lora_model lora_model_dir \

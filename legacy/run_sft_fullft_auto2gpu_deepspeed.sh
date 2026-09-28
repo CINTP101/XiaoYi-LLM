@@ -17,7 +17,7 @@ export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-/tmp/medical_qwen_transformers_
 export TMPDIR="${TMPDIR:-/tmp}"
 mkdir -p "${HF_HOME}" "${HF_DATASETS_CACHE}" "${TRANSFORMERS_CACHE}" "${TMPDIR}"
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 detect_gpus() {
   if [[ -n "${CUDA_VISIBLE_DEVICES:-}" ]]; then
@@ -50,7 +50,7 @@ echo "Using NUM_GPUS=${NUM_GPUS}"
 
 TRAIN_MAX_STEPS="${TRAIN_MAX_STEPS:-200000}"
 MODEL_MAX_LENGTH="${MODEL_MAX_LENGTH:-384}"
-DS_CONFIG="${DS_CONFIG:-$(pwd)/ds_zero2_bf16.json}"
+DS_CONFIG="${DS_CONFIG:-$(pwd)/legacy/configs/ds_zero2_bf16.json}"
 # 全参 + ZeRO-2 每次 save 体积大；save_total_limit=999 极易把盘写满（OSError 28）。load_best_model_at_end 仍会保留最优 checkpoint。
 SAVE_TOTAL_LIMIT="${SAVE_TOTAL_LIMIT:-4}"
 

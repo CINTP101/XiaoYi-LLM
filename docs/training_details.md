@@ -8,6 +8,8 @@
 
 使用百科类文档类数据集，用来在领域数据集上增量预训练或二次预训练，期望能把领域知识注入给模型，以医疗领域为例，希望增量预训练，能让模型理解感冒的症状、病因、治疗药品、治疗方法、药品疗效等知识，便于后续的SFT监督微调能激活这些内在知识。
 
+以下命令均从仓库根目录运行，属于上游通用示例；使用前请核对脚本中的模型和数据路径。
+
 这里说明一点，像GPT3、LLaMA这样的大模型理论上是可以从增量预训练中获益，但增量预训练需要满足两个要求：1）高质量的预训练样本；2）较大的计算资源，显存要求高，即使是用LoRA技术，也要满足block_size=1024或2048长度的文本加载到显存中。
 
 其次，如果你的项目用到的数据是模型预训练中已经使用了的，如维基百科、ArXiv等LLaMA模型预训练用了的，则这些数据是没有必要再喂给LLaMA增量预训练，而且预训练样本的质量如果不够高，也可能会损害原模型的生成能力。
@@ -19,8 +21,7 @@ tips：PT阶段是可选项，请慎重处理。
 Continue pretraining of the base llama-7b model to create llama-7b-pt:
 
 ```shell
-cd scripts
-sh run_pt.sh
+bash legacy/run_pt.sh
 ```
 
 [训练参数说明](https://github.com/shibing624/MedicalGPT/blob/main/docs/training_params.md)
@@ -35,8 +36,7 @@ sh run_pt.sh
 Supervised fine-tuning of the base llama-7b-pt model to create llama-7b-sft
 
 ```shell
-cd scripts
-sh run_sft.sh
+bash legacy/run_sft.sh
 ```
 
 [训练参数说明](https://github.com/shibing624/MedicalGPT/blob/main/docs/training_params.md)
@@ -59,8 +59,7 @@ RM模型是通过人工标注SFT模型的打分结果来训练的，目的是取
 Reward modeling using dialog pairs from the reward dataset using the llama-7b-sft to create llama-7b-reward:
 
 ```shell
-cd scripts
-sh run_rm.sh
+bash legacy/run_rm.sh
 ```
 [训练参数说明](https://github.com/shibing624/MedicalGPT/blob/main/docs/training_params.md)
 
@@ -85,8 +84,7 @@ Reinforcement Learning fine-tuning of llama-7b-sft with the llama-7b-reward rewa
 
 ```shell
 pip install git+https://github.com/lvwerra/trl
-cd scripts
-sh run_ppo.sh
+bash legacy/run_ppo.sh
 ```
 
 ### Stage 3: DPO(Direct Preference Optimization)
@@ -102,5 +100,5 @@ DPO 将奖励函数和最优策略之间的映射联系起来，从而把约束�
 PS: 使用DPO训练LLaMA2-7B在fp16，batch_size为2时，需要70GB显存。
 
 ```shell
-sh run_dpo.sh
+bash legacy/run_dpo.sh
 ```

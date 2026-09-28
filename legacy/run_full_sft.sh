@@ -32,5 +32,5 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 supervised_fine
     --ddp_find_unused_parameters False \
     --gradient_checkpointing True \
     --template_name chatglm3 \
-    --deepspeed ./zero2.json \
+    --deepspeed ./legacy/configs/zero2.json \
     --bf16

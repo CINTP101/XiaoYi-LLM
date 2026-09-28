@@ -16,7 +16,7 @@ export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-/tmp/medical_qwen_transformers_
 export TMPDIR="${TMPDIR:-/tmp}"
 mkdir -p "${HF_HOME}" "${HF_DATASETS_CACHE}" "${TRANSFORMERS_CACHE}" "${TMPDIR}"
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 MEDICAL_QWEN_ROOT="$(pwd)"
 
 detect_gpus() {
@@ -48,7 +48,7 @@ if [[ "${NUM_GPUS}" -gt 2 ]]; then
 fi
 echo "Using NUM_GPUS=${NUM_GPUS}"
 
-DS_CONFIG="${DS_CONFIG:-${MEDICAL_QWEN_ROOT}/ds_zero2_bf16.json}"
+DS_CONFIG="${DS_CONFIG:-${MEDICAL_QWEN_ROOT}/legacy/configs/ds_zero2_bf16.json}"
 CACHE_DIR="${CACHE_DIR:-/tmp/medical_qwen_pt_cache}"
 OUTPUT_DIR="${OUTPUT_DIR:-${MEDICAL_QWEN_ROOT}/outputs-pt-incremental-qwen35-4b-medical-medicalds}"
 # 含 train_*.json / valid_*.json 的目录（JSONL 行、Alpaca 字段）
@@ -82,7 +82,7 @@ echo "Using TRAIN_FILE_DIR=${TRAIN_FILE_DIR}"
 echo "Using MODEL_NAME_OR_PATH=${MODEL_NAME_OR_PATH}"
 echo "Using TRAIN_MODE=${TRAIN_MODE} WARMUP_STEPS=${WARMUP_STEPS} USE_PEFT=${USE_PEFT}"
 
-torchrun --master_port "${MASTER_PORT}" --nproc_per_node "${NUM_GPUS}" pretraining.py \
+torchrun --master_port "${MASTER_PORT}" --nproc_per_node "${NUM_GPUS}" legacy/pretraining.py \
   --deepspeed "${DS_CONFIG}" \
   --model_name_or_path "${MODEL_NAME_OR_PATH}" \
   --tokenizer_name_or_path "${TOKENIZER_NAME_OR_PATH}" \

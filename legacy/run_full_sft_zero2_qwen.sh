@@ -54,4 +54,4 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --master_port "${MASTER_PORT}" --n
     --gradient_checkpointing True \
     --cache_dir /tmp/medical_qwen_cache \
     --flash_attn False \
-    --deepspeed /home/notebook/data/group/guoyulong/code/image_enhance/vlm-prx/SuperResolution_train_prx/andes_vl/Medical_Qwen/zero2.json
+    --deepspeed ./legacy/configs/zero2.json
