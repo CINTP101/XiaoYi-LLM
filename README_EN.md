@@ -51,4 +51,8 @@ XiaoYi builds on [Medical_Qwen](https://github.com/scuterGuoyulong/Medical_Qwen)
 
 Historical reports and checksum files are kept under their original names. The API is for information collection and research demos, not individual diagnosis, treatment, or prescriptions. Please do not upload patient data, credentials, or large model files when contributing.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [LICENSE](LICENSE) for contribution and license details.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution details.
+
+## License
+
+Original XiaoYi code and documentation that the maintainers are entitled to license are available under the [MIT License](LICENSE). Inherited Medical_Qwen and MedicalGPT material retains its original Apache-2.0 terms and copyright notices. The repository's MIT file does not relicense third-party models, example datasets, training data, weights, or RAG content. See [third-party notices](THIRD_PARTY_NOTICES.md), the preserved [Apache-2.0 license](LICENSES/Apache-2.0.txt), and the [safety notice](DISCLAIMER).
