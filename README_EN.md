@@ -4,6 +4,14 @@ XiaoYi, written **小医** in Chinese, is a work-in-progress TCM consultation mo
 
 This repository contains source code and documentation. Model weights, training archives, the BGE model, and the RAG index are distributed separately. Cloning the repo alone will not start the full model service.
 
+## Technical overview
+
+The current release, **V5.4-R1**, adapts **Qwen2.5-1.5B-Instruct** to TCM consultation with **LoRA parameter-efficient fine-tuning**. Its goal is a controlled intake workflow rather than free-form diagnosis or treatment generation.
+
+Requests pass through safety routing and intent detection first. Urgent or referral cases follow dedicated response paths; knowledge questions can use BGE/RAG retrieval; consultation requests use the model and then a Candidate H v2 adapter to produce a follow-up question or a factual summary. The app receives structured `action`, `message`, and signed session-state fields, not the raw model generation.
+
+The FastAPI service checks the frozen weights and adapters at startup, and `/readyz` reports whether the stack is ready. Workflow code and selected reports from data preparation, training, and evaluation are kept here for traceability. **These engineering checks are not clinical validation**; XiaoYi remains an information-collection and research-demo tool.
+
 ## Start here
 
 - [App API guide](docs/API_V54_APP.md) — requests, session state, authentication, and deployment notes.
